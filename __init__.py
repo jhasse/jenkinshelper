@@ -9,6 +9,9 @@ class PushDir(object):
     def __exit__(self, type, value, tb):
         os.chdir(self.old_dir)
 
-def run(cmd):
-    print("\x1b[0;34m" + cmd + "\x1b[0m")
-    subprocess.check_call(cmd, shell=True)
+def run(cmd, may_fail=False):
+    print("\x1b[0;34m$ " + cmd + "\x1b[0m")
+    if may_fail:
+        subprocess.call(cmd, shell=True)
+    else:
+        subprocess.check_call(cmd, shell=True)

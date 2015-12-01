@@ -17,7 +17,7 @@ def run(cmd, may_fail=False):
         path = ""
     else:
         path += " "
-    print("\x1b[0;34m{}$ {}\x1b[0m".format(path, cmd))
+    print("\x1b[1;34m{}$ {}\x1b[0m".format(path, cmd))
     if may_fail:
         subprocess.call(cmd, shell=True)
     else:

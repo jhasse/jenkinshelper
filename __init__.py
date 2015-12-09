@@ -1,4 +1,10 @@
-import os, subprocess
+"""
+Useful tools for continuous integration
+"""
+
+import os
+import subprocess
+from jenkinshelper import log
 
 root_working_dir = os.getcwd()
 
@@ -22,3 +28,16 @@ def run(cmd, may_fail=False):
         subprocess.call(cmd, shell=True)
     else:
         subprocess.check_call(cmd, shell=True)
+
+def loadEnv(cmd):
+    """
+    Runs a cmd and loads the environment variables it sets
+    """
+    log.info("Loading environment variables from " + cmd)
+    variables = subprocess.check_output(cmd + ' && set')
+    for var in variables.splitlines():
+        var = var.decode('cp1252') # FIXME: This works on (German?) Windows only
+        k, _, v = [x.strip() for x in var.strip().partition('=')]
+        if k.startswith('?') or k == '':
+            continue
+        os.environ[k] = v

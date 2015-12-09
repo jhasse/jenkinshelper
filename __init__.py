@@ -1,24 +1,24 @@
-"""
-Useful tools for continuous integration
-"""
+"""Useful tools for continuous integration"""
 
 import os
 import subprocess
 from jenkinshelper import log
 
-root_working_dir = os.getcwd()
+ROOT_WORKING_DIR = os.getcwd()
 
 class PushDir(object):
+    """Context Manager for changing the cwd"""
     def __init__(self, new_dir):
         self.old_dir = os.getcwd()
         self.new_dir = new_dir
     def __enter__(self):
         os.chdir(self.new_dir)
-    def __exit__(self, type, value, tb):
+    def __exit__(self, _type, value, traceback):
         os.chdir(self.old_dir)
 
 def run(cmd, may_fail=False):
-    path = os.path.relpath(os.getcwd(), root_working_dir)
+    """Runs a cmd and prints it first"""
+    path = os.path.relpath(os.getcwd(), ROOT_WORKING_DIR)
     if path == ".":
         path = ""
     else:
@@ -29,15 +29,13 @@ def run(cmd, may_fail=False):
     else:
         subprocess.check_call(cmd, shell=True)
 
-def loadEnv(cmd):
-    """
-    Runs a cmd and loads the environment variables it sets
-    """
+def load_env(cmd):
+    """Runs a cmd and loads the environment variables it sets"""
     log.info("Loading environment variables from " + cmd)
     variables = subprocess.check_output(cmd + ' && set')
     for var in variables.splitlines():
         var = var.decode('cp1252') # FIXME: This works on (German?) Windows only
-        k, _, v = [x.strip() for x in var.strip().partition('=')]
+        k, _, val = [x.strip() for x in var.strip().partition('=')]
         if k.startswith('?') or k == '':
             continue
-        os.environ[k] = v
+        os.environ[k] = val

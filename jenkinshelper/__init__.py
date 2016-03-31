@@ -2,6 +2,8 @@
 
 import os
 import subprocess
+import shutil
+import time
 from jenkinshelper import log
 
 ROOT_WORKING_DIR = os.getcwd()
@@ -39,3 +41,17 @@ def load_env(cmd):
         if k.startswith('?') or k == '':
             continue
         os.environ[k] = val
+
+def rmdir(directory):
+    """Removes a directory with multiple tries. On Windows this is needed, because read access by a
+    random program causes a remove operation to fail."""
+    log.info("Removing directory " + directory)
+    tries = 0
+    try:
+        shutil.rmtree(directory)
+    except PermissionError as err:
+        tries += 1
+        if tries > 100:
+            raise err
+        else:
+            time.sleep(0.1)

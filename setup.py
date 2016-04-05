@@ -7,4 +7,5 @@ setup(
     author="Jan Niklas Hasse",
     author_email="jhasse@bixense.com",
     url="https://github.com/jhasse/jenkinshelper",
+    description="Helper scripts for Jenkins written in Python 3",
 )

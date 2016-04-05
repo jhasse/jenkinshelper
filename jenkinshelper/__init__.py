@@ -47,11 +47,13 @@ def rmdir(directory):
     random program causes a remove operation to fail."""
     log.info("Removing directory " + directory)
     tries = 0
-    try:
-        shutil.rmtree(directory)
-    except PermissionError as err:
-        tries += 1
-        if tries > 100:
-            raise err
-        else:
-            time.sleep(0.1)
+    while True:
+        try:
+            shutil.rmtree(directory)
+            return
+        except PermissionError as err:
+            tries += 1
+            if tries > 100:
+                raise err
+            else:
+                time.sleep(0.01)

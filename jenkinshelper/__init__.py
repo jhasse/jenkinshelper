@@ -4,6 +4,7 @@ import os
 import subprocess
 import shutil
 import time
+import sys
 from jenkinshelper import log
 
 ROOT_WORKING_DIR = os.getcwd()
@@ -18,7 +19,7 @@ class PushDir(object):
     def __exit__(self, _type, value, traceback):
         os.chdir(self.old_dir)
 
-def run(cmd, may_fail=False):
+def run(cmd, may_fail=False, max_output_lines=-1):
     """Runs a cmd and prints it first"""
     path = os.path.relpath(os.getcwd(), ROOT_WORKING_DIR)
     if path == ".":
@@ -26,10 +27,24 @@ def run(cmd, may_fail=False):
     else:
         path += " "
     print("\x1b[1;34m{}$ {}\x1b[0m".format(path, cmd))
-    if may_fail:
-        subprocess.call(cmd, shell=True)
-    else:
-        subprocess.check_call(cmd, shell=True)
+    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    printed_lines = 0
+    while True:
+        line = proc.stdout.readline()
+        if line != b'':
+            if max_output_lines >= 0 and printed_lines >= max_output_lines:
+                log.error("Command output exceeds {} line{}.".format(
+                    max_output_lines, "" if max_output_lines == 1 else "s"
+                ))
+                proc.kill()
+                break
+            sys.stdout.buffer.write(line)
+            printed_lines += 1
+        else:
+            break
+    proc.wait()
+    if not may_fail and proc.returncode != 0:
+        raise subprocess.CalledProcessError(proc.returncode, cmd)
 
 def load_env(cmd):
     """Runs a cmd and loads the environment variables it sets"""
